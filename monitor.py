@@ -8,8 +8,9 @@ class StmMonitor:
 
     def __init__(self):
         self.connDb = sqlite3.connect("stock-db.db")
+        self.stock_name, self.stock_count = "", 0
 
-    def getDbAllStocks(self):
+    def _getDbAllStocks(self):
 
         _sendCommandDd = self.connDb.execute(f"SELECT * FROM stock_table").fetchall()
 
@@ -17,22 +18,16 @@ class StmMonitor:
         return _sendCommandDd
     
 
-    def addNewStocks(self, stockName, stockCount):
-        if stockName and stockCount is not None: 
-            if isinstance(stockCount, int): 
-                print("OK")
-            else:
-                print("Stock count is not Integer !")
-        else: 
-            print("Please enter stock name and count !")
-
-
+    def _addNewStocks(self):
+        try: 
+            if self.stock_name and self.stock_count is not None: 
+               pass
+            else: 
+                print("Please enter stock name and count !")
+        except sqlite3.OperationalError: 
+           print("New stocks is not added !")
 
 app = StmMonitor()
-
-
-
-    
 
     
  
