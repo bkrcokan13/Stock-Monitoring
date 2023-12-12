@@ -1,4 +1,5 @@
 from bs4 import *
+from logger import Logger
 import requests
 import time 
 import json
@@ -15,17 +16,35 @@ class StockCrawler:
         }
 
         self.stockRawData = None
+        self.stockName = None
 
-    
-    def _crawlerLogger(self):
-        pass
+        
+    def downloadStocksPage(self, stockname):
+        
+        if stockname is not None: 
+            downloadPage = requests.get(
+                f"{self.targetUrl}/{stockname}-hisse/", 
+                headers=self.deviceHeader
+            )
 
-    def downloadStocksPage(self):
-        pass
+            if downloadPage.status_code == 200:
+                 self.stockRawData = downloadPage.content
+                 print("Data extracted !")
+            else: 
+                print(f"Error code : {str(downloadPage.status_code)}")
+
+            
+        
+        
     
 
     def parseStocks(self): 
-        pass
+      pass
+            
 
     def extractJsonFile(self):
         pass
+
+
+app = StockCrawler()
+app.downloadStocksPage(stockname="taten")

@@ -90,6 +90,3 @@ app.stock_count = 2
 
 app._updateStocks()
 app._getDbAllStocks()
-
-    
- # TODO : https://www.sqliz.com/posts/python-crud-sqlite/#conclusion
