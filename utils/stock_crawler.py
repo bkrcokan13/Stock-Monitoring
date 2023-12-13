@@ -18,9 +18,11 @@ class StockCrawler:
         self.stockRawData = None
         self.stockName = None
 
+        self.logger = Logger()
+
         
     def downloadStocksPage(self, stockname):
-        
+
         if stockname is not None: 
             downloadPage = requests.get(
                 f"{self.targetUrl}/{stockname}-hisse/", 
@@ -29,17 +31,27 @@ class StockCrawler:
 
             if downloadPage.status_code == 200:
                  self.stockRawData = downloadPage.content
-                 print("Data extracted !")
+                 self.logger.successLogger("Stock page downloaded..!")
+
+                 self.stockName = stockname
+
+                 self.parseStocks()
             else: 
-                print(f"Error code : {str(downloadPage.status_code)}")
+                self.logger.errorLogger(f"Stock page is not downloaded !...({downloadPage.status_code}) ")
 
-            
         
-        
-    
-
     def parseStocks(self): 
-      pass
+        soup = BeautifulSoup(self.stockRawData, 'html.parser')
+
+
+        # Get stock price and clear string
+        getStockPrice = soup.find('p', attrs= {
+            'class':'val'
+        }).text.replace('₺','').replace(',','.')
+
+ 
+        print(f"Stock : ({self.stockName.upper()}) - {getStockPrice}")
+        
             
 
     def extractJsonFile(self):
@@ -47,4 +59,4 @@ class StockCrawler:
 
 
 app = StockCrawler()
-app.downloadStocksPage(stockname="taten")
+app.downloadStocksPage(stockname="asels")

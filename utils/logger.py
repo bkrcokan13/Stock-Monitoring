@@ -26,9 +26,3 @@ class Logger:
     
     def extractLogger(self):
         pass
-
-app = Logger()
-
-app.infoLogger(message="Stock searching ...!")
-app.errorLogger(message="Stock searching ...!")
-app.successLogger(message="Stock searching ...!")

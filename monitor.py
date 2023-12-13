@@ -77,16 +77,27 @@ class StmMonitor:
         except sqlite3.OperationalError: 
             print(Fore.RED, "Error : Stock is not updating !")
 
+
+    def mainMenu(self):
+        menuArt = """
+                        |-------------------------|
+                        |       STM V.1.0.0       |
+                        |-------------------------|
+                        |  1- (Add Stock)         |                             
+                        |  2- (Delete Stock)      |                              
+                        |  3- (Update Stock)      |                              
+                        |  4- (Show All Stocks)   |                              
+                        |  5- (Delete All Stocks) | 
+                        |-------------------------|                                                                              
+                                                                                    
+                   
+                    """
+        while True: 
+            print(menuArt)
+            input("->")
         
 
 
 app = StmMonitor()
 
-# Test funcs
-app.stock_name = "TATEN"
-app.stock_count = 2
-# app._addNewStocks()
-
-
-app._updateStocks()
-app._getDbAllStocks()
+app.mainMenu()
