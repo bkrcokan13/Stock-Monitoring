@@ -1,6 +1,6 @@
 import sqlite3
 import time
-from colorama import *
+from utils import logger
 
 
 
@@ -10,21 +10,22 @@ class StmMonitor:
     def __init__(self):
         self.connDb = sqlite3.connect("stock-db.db")
         self.stock_name, self.stock_count = "", 0
+
+
+        self.eventLogger = logger.Logger()
+    
     
 
-    def eventLogger(self):
-        pass
-
-    
+    # CRUD's operations
     def _getDbAllStocks(self):
 
         _sendCommandDd = self.connDb.execute(f"SELECT * FROM stock_table").fetchall()
 
         if _sendCommandDd == []:
-            print("Database Is Empty !")
+            self.eventLogger.infoLogger("Database Is Empty !")
         else:
              for row in _sendCommandDd:
-                print(f"Stock ID : {row[0]}, \tStock Name: {row[1]}, \tStock Count: {row[2]}\n")
+                self.eventLogger.infoLogger(f"Stock ID : {row[0]}, \tStock Name: {row[1]}, \tStock Count: {row[2]}\n")
     
 
     def _addNewStocks(self):
@@ -41,27 +42,30 @@ class StmMonitor:
 
                # Execute SQL Insert Command
                self.connDb.execute(insertQuery, stockValues).connection.commit()
+
+               self.eventLogger.successLogger(f"New stock added..  ({self.stock_name} - {self.stock_count} )")
                     
             else: 
-                print("Please enter stock name and count !")
+                self.eventLogger.errorLogger("Please enter stock name and count !")
         except sqlite3.OperationalError: 
-           print("New stocks is not added !")
+            self.eventLogger.errorLogger(f"({self.stock_name}) is not added database...")
         except sqlite3.IntegrityError: 
-            print(Fore.RED, f"Error: {self.stock_name} already exists in the database ! ")
-            print(Style.RESET_ALL)
+            self.eventLogger.errorLogger(f"({self.stock_name}) is available in database...")
 
     def _deleteStocks(self):
         try:
             if self.stock_name is not None:
                 
                 deleteQuery = "DELETE FROM stock_table WHERE stock_name = ?"
-                stockName = (self.stock_name)
+                stockName = ([self.stock_name])
 
                 # Execute SQL Command
                 self.connDb.execute(deleteQuery, stockName).connection.commit()
 
+                self.eventLogger.successLogger(f"{self.stock_name} is removed from database...")
+
         except sqlite3.OperationalError: 
-            print(Fore.RED, "Error : Stock is not delete !")
+            self.eventLogger.errorLogger(f"{self.stock_name} is not removed from database...")
     
 
     def _updateStocks(self): 
@@ -73,11 +77,15 @@ class StmMonitor:
 
                 # Execute SQL Command
                 self.connDb.execute(updateQuery, updateStock).connection.commit()
+
+                self.eventLogger.successLogger(f"({self.stock_name}) is updated count ({self.stock_count})..")
                 
         except sqlite3.OperationalError: 
-            print(Fore.RED, "Error : Stock is not updating !")
+            self.eventLogger.errorLogger(f"{self.stock_name} is not updated...")
 
 
+
+    # Terminal UI
     def mainMenu(self):
         menuArt = """
                         |-------------------------|
@@ -87,8 +95,7 @@ class StmMonitor:
                         |  2- (Delete Stock)      |                              
                         |  3- (Update Stock)      |                              
                         |  4- (Show All Stocks)   |                              
-                        |  5- (Delete All Stocks) |
-                        |  6- (Exit)              | 
+                        |  5- (Delete All Stocks) | 
                         |-------------------------|                                                                              
                                                                                     
                    
@@ -97,20 +104,119 @@ class StmMonitor:
             print(menuArt)
             userChoice = input("->")
 
-            # Add New Stock
-            if userChoice == "1":
-                stName, stCount = input("Stock Name : "), input("Stock Count : ")
+            if userChoice is not None:
+ 
+                self.stock_name, self.stock_count = "", ""
+                if userChoice == "1":
 
-                if stCount and stCount is not None:
-                    self.stock_name, self.stock_count = stName, stCount
-                    self._addNewStocks()
-                    self._getDbAllStocks()
-                    input(".....Press the any key and return menu.....") 
+                    while True:
+                            print(
+                            """
+                                |-------------------------|
+                                |       STM V.1.0.0       |
+                                |-------------------------|
+                            """
+                            )
+                            stName, stCount = input("Stock Name : "), input("Stock Count : ")
 
-            # Update Stock
+                            if stName and stCount is not None:
+                                
 
-            
-        
+                                # Get user data
+                                self.stock_name, self.stock_count = stName, stCount
+
+                                # Call add new stock function
+                                self._addNewStocks()
+
+                                # Show updated database
+                                self._getDbAllStocks()
+
+
+                                input("...Press the any key and return the main menu ")
+
+
+                                # Clear global variables
+                                self.stock_name, self.stock_count = "", ""
+                                break
+                            else:
+                                elseChoice = input("Please enter stock name and stock count.. (Return Menu : Q)")
+
+
+                                # Return menu 
+                                if elseChoice == "Q" or "q":
+                                    break
+                                else:
+                                    continue
+                
+                elif userChoice == '2':
+                    while True:
+                        # Clear stock name and count
+                        self.stock_name,self.stock_count = "", ""
+                        print(
+                            """
+                                |-------------------------|
+                                |       STM V.1.0.0       |
+                                |-------------------------|
+                            """
+                        )
+
+                        # Get User value
+                        stName = input("Stock Name : ")
+
+                        if stName is not None:
+                            
+                            # Update global name varialable
+                            self.stock_name = stName
+
+
+                            # Delete selected stocks
+                            self._deleteStocks()
+
+                            # Show updated database
+                            self._getDbAllStocks()
+                            input("...Press the any key and return the main menu ")
+
+
+                            # Clear global varialable
+                            self.stock_name, self.stock_count = "", ""
+                            break
+                elif userChoice == '3':
+                    while True:
+                        # Clear stock name and count
+                        self.stock_name,self.stock_count = "", ""
+                        print(
+                            """
+                                |-------------------------|
+                                |       STM V.1.0.0       |
+                                |-------------------------|
+                            """
+                        )
+
+                        # Get User value
+                        stName, stCount = input("Updated Stock Name: "), input("Updated Stock Count: ")
+
+                        if stName is not None:
+                            
+                            # Update global name varialable
+                            self.stock_name = stName
+
+
+                            # Delete selected stocks
+                            self._updateStocks()
+
+                            # Show updated database
+                            self._getDbAllStocks()
+                            input("...Press the any key and return the main menu ")
+
+
+                            # Clear global varialable
+                            self.stock_name, self.stock_count = "", ""
+                            break
+                                                
+            else:
+                input("....Please enter any command....")    
+                    
+                    
 
 
 app = StmMonitor()
