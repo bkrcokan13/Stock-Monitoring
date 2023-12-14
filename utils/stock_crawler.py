@@ -56,7 +56,3 @@ class StockCrawler:
 
     def extractJsonFile(self):
         pass
-
-
-app = StockCrawler()
-app.downloadStocksPage(stockname="asels")

@@ -87,14 +87,29 @@ class StmMonitor:
                         |  2- (Delete Stock)      |                              
                         |  3- (Update Stock)      |                              
                         |  4- (Show All Stocks)   |                              
-                        |  5- (Delete All Stocks) | 
+                        |  5- (Delete All Stocks) |
+                        |  6- (Exit)              | 
                         |-------------------------|                                                                              
                                                                                     
                    
                     """
         while True: 
             print(menuArt)
-            input("->")
+            userChoice = input("->")
+
+            # Add New Stock
+            if userChoice == "1":
+                stName, stCount = input("Stock Name : "), input("Stock Count : ")
+
+                if stCount and stCount is not None:
+                    self.stock_name, self.stock_count = stName, stCount
+                    self._addNewStocks()
+                    self._getDbAllStocks()
+                    input(".....Press the any key and return menu.....") 
+
+            # Update Stock
+
+            
         
 
 
