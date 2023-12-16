@@ -67,6 +67,21 @@ class StmMonitor:
         except sqlite3.OperationalError: 
             self.eventLogger.errorLogger(f"{self.stock_name} is not removed from database...")
     
+    def _deleteAllStocks(self):
+        try:
+
+            # Delete All Table Command
+            deleteAllQuery = "DELETE FROM stock_table"
+
+            # Execute SQL Command
+            self.connDb.execute(deleteAllQuery).connection.commit()
+            
+            self.eventLogger.successLogger("All stocks deleted..") 
+
+        except sqlite3.OperationalError:
+            self.eventLogger.errorLogger("Stocks rows not deleting...")
+
+
 
     def _updateStocks(self): 
         try:
@@ -212,13 +227,47 @@ class StmMonitor:
                             # Clear global varialable
                             self.stock_name, self.stock_count = "", ""
                             break
-                                                
+                elif userChoice == '4':
+                    while True:
+                        self.stock_name, self.stock_count = "",""
+
+                        print(
+                            """
+                                |-------------------------|
+                                |       STM V.1.0.0       |
+                                |-------------------------|
+                            """
+                        )
+
+                        self._getDbAllStocks()
+
+                        input("...Press the any key and return the main menu ...")
+                        break
+
+                elif userChoice == '5':
+
+                    while True:
+                        self.stock_name, self.stock_count = "",""
+
+                        print(
+                                """
+                                    |-------------------------|
+                                    |       STM V.1.0.0       |
+                                    |-------------------------|
+                                """
+                            )
+
+                        self._deleteAllStocks()
+
+                        input("...Press the any key and return the main menu...")
+                        break
+                    
+
+                                                    
             else:
                 input("....Please enter any command....")    
                     
                     
-
-
 app = StmMonitor()
 
 app.mainMenu()
