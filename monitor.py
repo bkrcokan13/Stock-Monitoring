@@ -1,6 +1,7 @@
 import sqlite3
 import time
 from utils import logger
+from rich import table, console,box
 
 
 
@@ -19,14 +20,48 @@ class StmMonitor:
     # CRUD's operations
     def _getDbAllStocks(self):
 
+
+        tableColumns = [
+            "Stock ID", "Stock Name", "Stock Count"
+        ]
+
+        tableRows = []
+
+        dataTable = table.Table(title="Stocks", box=box.HEAVY)
+
+        tableConsole = console.Console()
+
+        
+
         _sendCommandDd = self.connDb.execute(f"SELECT * FROM stock_table").fetchall()
 
         if _sendCommandDd == []:
             self.eventLogger.infoLogger("Database Is Empty !")
         else:
-             for row in _sendCommandDd:
-                self.eventLogger.infoLogger(f"Stock ID : {row[0]}, \tStock Name: {row[1]}, \tStock Count: {row[2]}\n")
-    
+            for row in _sendCommandDd:
+
+                dbList = list(row)
+                
+
+                # Temp, convert int to string (stock_id, stock_count) 
+                dbList[0], dbList[2] = str(dbList[0]), str(dbList[2])
+
+
+                # Add rich table rows
+                tableRows.append(dbList)
+            
+            # Create table column 
+            for column in tableColumns:
+                dataTable.add_column(column)
+            
+
+            # Create table row
+            for row in tableRows:
+                dataTable.add_row(*row, end_section=True, style="bright_green") 
+
+            # Print table
+            tableConsole.print(dataTable)
+
 
     def _addNewStocks(self):
         try: 
@@ -35,10 +70,9 @@ class StmMonitor:
             if self.stock_name and self.stock_count is not None: 
                 
                insertQuery = "INSERT INTO stock_table(stock_name, stock_count) VALUES(?,?)"
-
+               
                # Define values
                stockValues = (self.stock_name, self.stock_count)
-
 
                # Execute SQL Insert Command
                self.connDb.execute(insertQuery, stockValues).connection.commit()
@@ -57,11 +91,14 @@ class StmMonitor:
             if self.stock_name is not None:
                 
                 deleteQuery = "DELETE FROM stock_table WHERE stock_name = ?"
+
                 stockName = ([self.stock_name])
+               
 
                 # Execute SQL Command
                 self.connDb.execute(deleteQuery, stockName).connection.commit()
-
+                
+            
                 self.eventLogger.successLogger(f"{self.stock_name} is removed from database...")
 
         except sqlite3.OperationalError: 
@@ -73,8 +110,17 @@ class StmMonitor:
             # Delete All Table Command
             deleteAllQuery = "DELETE FROM stock_table"
 
+            # Clear Auto Increment 
+            clearAutoIncQuery = "DELETE FROM sqlite_sequence WHERE name = 'stock_table'"
+            
+               
+                
+
             # Execute SQL Command
             self.connDb.execute(deleteAllQuery).connection.commit()
+
+            # Execute Auto Increment Command 
+            self.connDb.execute(clearAutoIncQuery).connection.commit()
             
             self.eventLogger.successLogger("All stocks deleted..") 
 
@@ -102,22 +148,38 @@ class StmMonitor:
 
     # Terminal UI
     def mainMenu(self):
-        menuArt = """
-                        |-------------------------|
-                        |       STM V.1.0.0       |
-                        |-------------------------|
-                        |  1- (Add Stock)         |                             
-                        |  2- (Delete Stock)      |                              
-                        |  3- (Update Stock)      |                              
-                        |  4- (Show All Stocks)   |                              
-                        |  5- (Delete All Stocks) | 
-                        |-------------------------|                                                                              
-                                                                                    
-                   
-                    """
+
         while True: 
-            print(menuArt)
-            userChoice = input("->")
+
+            # Table defines
+            menuTable = table.Table(title="STM Monitoring")
+            menuConsole = console.Console()
+
+            menuColumns = [
+                "Code",
+                "Title"
+            ]   
+            menuRows = [
+                ["1", "Add Stock"],
+                ["2", "Delete Stock"],
+                ["3", "Update Stock"],
+                ["4", "Show All Stocks"],
+                ["5", "Delete All Stocks"]
+            ]
+
+
+            # Create Table Columns And Rows
+            for column in menuColumns:
+                menuTable.add_column(column, width=20, justify="center")   
+
+            for row in menuRows:
+                menuTable.add_row(*row, style="bright_green", end_section=True)
+            
+
+            # Print Table
+            menuConsole.print(menuTable)
+
+            userChoice = input("Command ->")
 
             if userChoice is not None:
  
@@ -127,9 +189,9 @@ class StmMonitor:
                     while True:
                             print(
                             """
-                                |-------------------------|
-                                |       STM V.1.0.0       |
-                                |-------------------------|
+                                |*************************|
+                                |        ADD STOCK        |
+                                |*************************|
                             """
                             )
                             stName, stCount = input("Stock Name : "), input("Stock Count : ")
@@ -169,9 +231,9 @@ class StmMonitor:
                         self.stock_name,self.stock_count = "", ""
                         print(
                             """
-                                |-------------------------|
-                                |       STM V.1.0.0       |
-                                |-------------------------|
+                                |*************************|
+                                |       DELETE STOCK      |
+                                |*************************|
                             """
                         )
 
@@ -201,9 +263,9 @@ class StmMonitor:
                         self.stock_name,self.stock_count = "", ""
                         print(
                             """
-                                |-------------------------|
-                                |       STM V.1.0.0       |
-                                |-------------------------|
+                                |*************************|
+                                |       UPDATE STOCK      |
+                                |*************************|
                             """
                         )
 
@@ -233,9 +295,9 @@ class StmMonitor:
 
                         print(
                             """
-                                |-------------------------|
-                                |       STM V.1.0.0       |
-                                |-------------------------|
+                                |*************************|
+                                |     GET ALL STOCKS      |
+                                |*************************|
                             """
                         )
 
@@ -251,9 +313,9 @@ class StmMonitor:
 
                         print(
                                 """
-                                    |-------------------------|
-                                    |       STM V.1.0.0       |
-                                    |-------------------------|
+                                    |*************************|
+                                    |    DELETE ALL STOCKS    |
+                                    |*************************|
                                 """
                             )
 
