@@ -2,7 +2,7 @@ import sqlite3
 import time
 from utils import logger
 from rich import table, console,box
-
+from utils import monitor
 
 
 
@@ -12,7 +12,7 @@ class StmMonitor:
         self.connDb = sqlite3.connect("stock-db.db")
         self.stock_name, self.stock_count = "", 0
 
-
+        self.monitoring = monitor.Monitoring()
         self.eventLogger = logger.Logger()
     
     
@@ -164,7 +164,8 @@ class StmMonitor:
                 ["2", "Delete Stock"],
                 ["3", "Update Stock"],
                 ["4", "Show All Stocks"],
-                ["5", "Delete All Stocks"]
+                ["5", "Delete All Stocks"],
+                ["6", "Start Monitoring Stocks"]
             ]
 
 
@@ -323,9 +324,9 @@ class StmMonitor:
 
                         input("...Press the any key and return the main menu...")
                         break
-                    
-
-                                                    
+                elif userChoice == '6':
+                    monitoring = monitor.Monitoring()  
+                                                        
             else:
                 input("....Please enter any command....")    
                     
