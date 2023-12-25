@@ -32,7 +32,7 @@ class Monitoring:
 
         while True: 
             try:
-                monitorTimer = threading.Timer(12, self.getStocks)
+                monitorTimer = threading.Timer(12, self.parseStocksRate)
                 monitorTimer.start()
 
                 monitorTimer.join()
@@ -57,8 +57,13 @@ class Monitoring:
                 return False
             else: 
                 
-                self.dbStocks.clear()
 
+                # Clear Database Stocks List
+                self.dbStocks.clear()
+                
+                print(getStocksDb)
+
+                # Append DB Stocks List
                 for stockdb in getStocksDb:
                     self.dbStocks.append(
                     {
@@ -76,7 +81,8 @@ class Monitoring:
 
 
     def parseStocksRate(self):
-
+        
+        # Check DB Stocks
         if(self.getDBStocks()):
 
             for stock in self.dbStocks:
@@ -85,17 +91,21 @@ class Monitoring:
 
                     # Download stock page 
                     downloadStockPage = requests.get(
-                    self.targetUrl + f"{stock['stock_name']}-hisse",
-                    self.deviceHeader
+                        self.targetUrl + f"{stock['stock_name']}-hisse",
+                        self.deviceHeader
                     )
 
-
+                    # Info Current Stock
                     self.logger.infoLogger(f"Current Stock : {stock['stock_name']}")
 
-                    # Shhhh sleept
+                    # Wait 1.1 Sec
                     time.sleep(1.1)
 
+
+                    # HTML Status Code Check
                     if (downloadStockPage.status_code == 200):
+
+                        # Setup BS4
                         stockSoup = BeautifulSoup(downloadStockPage.content, 'html.parser')
 
                         self.logger.infoLogger("Stock price parsing....")
@@ -116,7 +126,8 @@ class Monitoring:
                             {
                                 'stock_name': stock['stock_name'],
                                 'stock_price': getStockPrice,
-                                'stock_value': str(stockPcsCalculate)
+                                'stock_value': str(stockPcsCalculate),
+                                'stock_pcs' : stock['stock_count']
                             }
                         )
 
@@ -127,12 +138,20 @@ class Monitoring:
                         break
                 except Exception as parserError:
                     self.logger.errorLogger(parserError)
-                finally:
                     break
+            
             
             # Clear DB stocks list
             self.dbStocks.clear()
 
+            for rateStock in self.stocksRatings:
+                print(f"""
+                    Stock Name :{rateStock['stock_name']}
+                    Stock Value : {rateStock['stock_price']}
+                    Your Stock Value : {rateStock['stock_value']}
+                    Your Stock Pcs : {rateStock['stock_pcs']}\n
+                """)
+
 
 app = Monitoring()
-app.startMonitor()
+app.parseStocksRate()   
