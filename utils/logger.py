@@ -1,8 +1,6 @@
 from colorama import *
 from datetime import datetime
 
-
-
 class Logger:
 
     def __init__(self):

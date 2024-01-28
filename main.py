@@ -1,5 +1,4 @@
-import sqlite3
-import time
+import sqlite3, time
 from utils import logger
 from rich import table, console,box
 from utils import monitor
@@ -325,7 +324,7 @@ class StmMonitor:
                         input("...Press the any key and return the main menu...")
                         break
                 elif userChoice == '6':
-                    monitoring = monitor.Monitoring()  
+                    self.monitoring.startMonitor()
                                                         
             else:
                 input("....Please enter any command....")    

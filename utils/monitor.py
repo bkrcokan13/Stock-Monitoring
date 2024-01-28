@@ -1,5 +1,5 @@
 from bs4 import *
-from logger import Logger
+from utils import logger
 import json, time, requests, sqlite3, threading
 
 
@@ -15,18 +15,13 @@ class Monitoring:
 
         self.connDb = sqlite3.connect("stock-db.db", check_same_thread=False)
 
-        self.logger = Logger()
+        self.logger = logger.Logger()
 
         self.dbStocks = []
 
         self.stocksRatings = []
 
         
-
-        
-    
-
-
     def startMonitor(self):
         self.logger.infoLogger("Monitoring started...")
 
@@ -151,7 +146,3 @@ class Monitoring:
                     Your Stock Value : {rateStock['stock_value']}
                     Your Stock Pcs : {rateStock['stock_pcs']}\n
                 """)
-
-
-app = Monitoring()
-app.parseStocksRate()   
