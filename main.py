@@ -1,5 +1,4 @@
-import sqlite3, time
-from utils import logger
+import sqlite3, time, os 
 from rich import table, console,box
 from utils import monitor
 
@@ -10,9 +9,9 @@ class StmMonitor:
     def __init__(self):
         self.connDb = sqlite3.connect("stock-db.db")
         self.stock_name, self.stock_count = "", 0
-
         self.monitoring = monitor.Monitoring()
-        self.eventLogger = logger.Logger()
+
+    
     
     
 
@@ -25,17 +24,17 @@ class StmMonitor:
         ]
 
         tableRows = []
-
         dataTable = table.Table(title="Stocks", box=box.HEAVY)
 
         tableConsole = console.Console()
 
         
+        
 
         _sendCommandDd = self.connDb.execute(f"SELECT * FROM stock_table").fetchall()
 
         if _sendCommandDd == []:
-            self.eventLogger.infoLogger("Database Is Empty !")
+            print("Database Is Empty !")
         else:
             for row in _sendCommandDd:
 
@@ -76,14 +75,14 @@ class StmMonitor:
                # Execute SQL Insert Command
                self.connDb.execute(insertQuery, stockValues).connection.commit()
 
-               self.eventLogger.successLogger(f"New stock added..  ({self.stock_name} - {self.stock_count} )")
+               print(f"New stock added..  ({self.stock_name} - {self.stock_count} )")
                     
             else: 
-                self.eventLogger.errorLogger("Please enter stock name and count !")
+                print("Please enter stock name and count !")
         except sqlite3.OperationalError: 
-            self.eventLogger.errorLogger(f"({self.stock_name}) is not added database...")
+            print(f"({self.stock_name}) is not added database...")
         except sqlite3.IntegrityError: 
-            self.eventLogger.errorLogger(f"({self.stock_name}) is available in database...")
+            print(f"({self.stock_name}) is available in database...")
 
     def _deleteStocks(self):
         try:
@@ -98,10 +97,10 @@ class StmMonitor:
                 self.connDb.execute(deleteQuery, stockName).connection.commit()
                 
             
-                self.eventLogger.successLogger(f"{self.stock_name} is removed from database...")
+                print(f"{self.stock_name} is removed from database...")
 
         except sqlite3.OperationalError: 
-            self.eventLogger.errorLogger(f"{self.stock_name} is not removed from database...")
+           print(f"{self.stock_name} is not removed from database...")
     
     def _deleteAllStocks(self):
         try:
@@ -121,10 +120,10 @@ class StmMonitor:
             # Execute Auto Increment Command 
             self.connDb.execute(clearAutoIncQuery).connection.commit()
             
-            self.eventLogger.successLogger("All stocks deleted..") 
+            print("All stocks deleted..") 
 
         except sqlite3.OperationalError:
-            self.eventLogger.errorLogger("Stocks rows not deleting...")
+            print("Stocks rows not deleting...")
 
 
 
@@ -138,19 +137,23 @@ class StmMonitor:
                 # Execute SQL Command
                 self.connDb.execute(updateQuery, updateStock).connection.commit()
 
-                self.eventLogger.successLogger(f"({self.stock_name}) is updated count ({self.stock_count})..")
+                print(f"({self.stock_name}) is updated count ({self.stock_count})..")
                 
         except sqlite3.OperationalError: 
-            self.eventLogger.errorLogger(f"{self.stock_name} is not updated...")
+            print(f"{self.stock_name} is not updated...")
 
 
 
     # Terminal UI
     def mainMenu(self):
 
-        while True: 
+        clearCmd = lambda : os.system('cls')
 
+        while True: 
+            
+            clearCmd()
             # Table defines
+            
             menuTable = table.Table(title="STM Monitoring")
             menuConsole = console.Console()
 

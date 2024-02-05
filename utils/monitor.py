@@ -1,6 +1,13 @@
+
 from bs4 import *
-from utils import logger
-import json, time, requests, sqlite3, threading
+from rich import box, console
+import  time  
+import requests
+import sqlite3
+import threading
+import rich.table as richTable
+import os
+
 
 
 class Monitoring: 
@@ -15,44 +22,50 @@ class Monitoring:
 
         self.connDb = sqlite3.connect("stock-db.db", check_same_thread=False)
 
-        self.logger = logger.Logger()
-
+        
         self.dbStocks = []
-
         self.stocksRatings = []
+        self.dbCheck = False
+        
+
+        
 
         
     def startMonitor(self):
-        self.logger.infoLogger("Monitoring started...")
 
-        while True: 
-            try:
-                monitorTimer = threading.Timer(12, self.parseStocksRate)
-                monitorTimer.start()
+        print("Monitoring started...")
+        self.getDBStocks()
 
-                monitorTimer.join()
+        if self.dbCheck is True: 
+             while True: 
+                try:
+                    monitorTimer = threading.Timer(5, self.parseStocksRate)
+                    monitorTimer.start()
 
-            except Exception as exp:
-                print(exp)
-                break
+                    monitorTimer.join()
+
+                except Exception as exp:
+                    print(exp)
+                    break
 
         
+
+
+    # Add Initalize
     def getDBStocks(self):
 
         try:
-            # Call table 
+            # Call table  
             getStocksDb = self.connDb.execute("SELECT * FROM stock_table").fetchall()
 
-            self.logger.infoLogger("Extracting DB Stocks...")
+            print("Extracting DB Stocks...")
             # Check DB values 
             if getStocksDb == []:
                 
-                self.logger.errorLogger("Database is empty !")
+                print("Database is empty !")
                 
-                return False
+                self.dbCheck = False
             else: 
-                
-
                 # Clear Database Stocks List
                 self.dbStocks.clear()
                 
@@ -67,82 +80,115 @@ class Monitoring:
                     }
                 )
                     
-                self.logger.successLogger("DB stocks extracted")
+                print("DB stocks extracted")
                     
-                return True
+                self.dbCheck = True
         except Exception as errorCollect:
-            self.logger.errorLogger(errorCollect)
+            print(message=f"{errorCollect}")
                         
-
-
     def parseStocksRate(self):
         
-        # Check DB Stocks
-        if(self.getDBStocks()):
+        clearCmd = lambda : os.system('cls')
+        for stock in self.dbStocks:
+            try:
+                # Download stock page 
+                downloadStockPage = requests.get(
+                    self.targetUrl + f"{stock['stock_name']}-hisse",
+                    self.deviceHeader
+                )
 
-            for stock in self.dbStocks:
-                
-                try:
+                # Info Current Stock
+                print(f"Current Stock : {stock['stock_name']}")
 
-                    # Download stock page 
-                    downloadStockPage = requests.get(
-                        self.targetUrl + f"{stock['stock_name']}-hisse",
-                        self.deviceHeader
+                # Wait 1.1 Sec
+                time.sleep(1.1)
+
+
+                # HTML Status Code Check
+                if (downloadStockPage.status_code == 200):
+
+                    # Setup BS4
+                    stockSoup = BeautifulSoup(downloadStockPage.content, 'html.parser')
+
+                    print("Stock price parsing....")
+
+
+                    # Parse stock price
+                    getStockPrice = stockSoup.find(
+                        'p', attrs= {'class':'val'}
+                    ).text.replace('₺','').replace(',','.')
+
+
+                    #! Only 2 last value
+                    # Calulcate stock pcs with stock price
+                    stockPcsCalculate = (stock['stock_count'] * float(getStockPrice))
+
+
+                    # Save temp stocks list
+                    self.stocksRatings.append(
+                        {
+                            'stock_name': stock['stock_name'],
+                            'stock_price': getStockPrice,
+                            'stock_value': str(stockPcsCalculate),
+                            'stock_pcs' : stock['stock_count']
+                        }
                     )
 
-                    # Info Current Stock
-                    self.logger.infoLogger(f"Current Stock : {stock['stock_name']}")
 
-                    # Wait 1.1 Sec
-                    time.sleep(1.1)
-
-
-                    # HTML Status Code Check
-                    if (downloadStockPage.status_code == 200):
-
-                        # Setup BS4
-                        stockSoup = BeautifulSoup(downloadStockPage.content, 'html.parser')
-
-                        self.logger.infoLogger("Stock price parsing....")
-
-
-                        # Parse stock price
-                        getStockPrice = stockSoup.find(
-                            'p', attrs= {'class':'val'}
-                        ).text.replace('₺','').replace(',','.')
-
-
-                        # Calulcate stock pcs with stock price
-                        stockPcsCalculate = (stock['stock_count'] * float(getStockPrice))
-
-
-                        # Save temp stocks list
-                        self.stocksRatings.append(
-                            {
-                                'stock_name': stock['stock_name'],
-                                'stock_price': getStockPrice,
-                                'stock_value': str(stockPcsCalculate),
-                                'stock_pcs' : stock['stock_count']
-                            }
-                        )
-
-
-                        self.logger.successLogger("Stock price parsed and value calculating is ok !")
-                    else:
-                        self.logger.errorLogger(f"Stock page not downloaded ! -- STATUS CODE : {downloadStockPage.status_code}")
-                        break
-                except Exception as parserError:
-                    self.logger.errorLogger(parserError)
+                    print("Stock price parsed and value calculating is ok !")
+                else:
+                    print(f"Stock page not downloaded ! -- STATUS CODE : {downloadStockPage.status_code}")
                     break
-            
-            
-            # Clear DB stocks list
-            self.dbStocks.clear()
+            except Exception as parserError:
+                print(parserError)
+                break
 
-            for rateStock in self.stocksRatings:
-                print(f"""
-                    Stock Name :{rateStock['stock_name']}
-                    Stock Value : {rateStock['stock_price']}
-                    Your Stock Value : {rateStock['stock_value']}
-                    Your Stock Pcs : {rateStock['stock_pcs']}\n
-                """)
+        stockTableColumn = [
+            "Stock Name", "Stock Value", "Stock Value", "Stock PCS"
+        ]
+
+        stockTableRowData = []
+
+
+        # Datatable Defines
+        stockTableRich, stockTableConsole = richTable.Table(title="Stocks", box=box.ROUNDED),console.Console()
+
+        for columnStocks in stockTableColumn:
+            stockTableRich.add_column(
+                columnStocks, 
+                width=24,
+                justify="center"
+            )
+
+        # Create Stock Rows
+        for stockData in self.stocksRatings:
+            stockTableRowData.append(
+                [
+                    f"{stockData['stock_name']}",
+                    f"{stockData['stock_price']}",
+                    f"{stockData['stock_value']}",
+                    f"{stockData['stock_pcs']}"
+                ]
+            )
+
+        # Create Rich Table
+        
+        for rowStocks in stockTableRowData:
+            stockTableRich.add_row(
+                *rowStocks,end_section=False
+            )
+        
+        # Print Table
+        stockTableConsole.print(stockTableRich, new_line_start=True)
+
+        # Clear All
+        stockTableRowData.clear()
+        self.stocksRatings.clear()
+        stockTableRowData.clear()
+        clearCmd()
+
+            
+            
+       
+            
+            
