@@ -1,4 +1,3 @@
-
 from bs4 import *
 from rich import box, console
 import  time  
@@ -47,8 +46,6 @@ class Monitoring:
                 except Exception as exp:
                     print(exp)
                     break
-
-        
 
 
     # Add Initalize
