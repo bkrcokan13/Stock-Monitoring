@@ -299,7 +299,7 @@ class StmMonitor:
                         print(
                             """
                                 |*************************|
-                                |     GET ALL STOCKS      |
+                                |       ALL STOCKS        |
                                 |*************************|
                             """
                         )
