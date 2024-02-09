@@ -1,5 +1,6 @@
 from bs4 import *
 from rich import box, console
+from rich.align import Align
 import  time  
 import requests
 import sqlite3
@@ -175,6 +176,7 @@ class Monitoring:
                 *rowStocks,end_section=False
             )
         
+        stockTableRich = Align.center(stockTableRich, vertical="middle")
         # Print Table
         stockTableConsole.print(stockTableRich, new_line_start=True)
 

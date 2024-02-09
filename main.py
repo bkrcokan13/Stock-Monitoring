@@ -1,5 +1,6 @@
 import sqlite3, time, os 
 from rich import table, console,box
+from rich.align import Align
 from utils import monitor
 
 
@@ -57,6 +58,9 @@ class StmMonitor:
             for row in tableRows:
                 dataTable.add_row(*row, end_section=True, style="bright_green") 
 
+
+            # Set align table
+            dataTable = Align.center(dataTable, vertical="middle")
             # Print table
             tableConsole.print(dataTable)
 
@@ -153,8 +157,9 @@ class StmMonitor:
             
             clearCmd()
             # Table defines
+            menuTable = table.Table(title="Stock Monitoring", title_justify="center")
             
-            menuTable = table.Table(title="Stock Monitoring")
+            
             menuConsole = console.Console()
 
             menuColumns = [
@@ -179,6 +184,7 @@ class StmMonitor:
                 menuTable.add_row(*row, style="bright_green", end_section=True)
             
 
+            menuTable = Align.center(menuTable, vertical="middle")
             # Print Table
             menuConsole.print(menuTable)
 
