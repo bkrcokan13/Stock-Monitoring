@@ -154,7 +154,7 @@ class StmMonitor:
             clearCmd()
             # Table defines
             
-            menuTable = table.Table(title="STM Monitoring")
+            menuTable = table.Table(title="Stock Monitoring")
             menuConsole = console.Console()
 
             menuColumns = [
