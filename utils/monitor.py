@@ -182,7 +182,11 @@ class Monitoring:
         stockTableRowData.clear()
         self.stocksRatings.clear()
         stockTableRowData.clear()
+        
+
+        time.sleep(3)
         clearCmd()
+       
 
             
             
